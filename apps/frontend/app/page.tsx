@@ -21,6 +21,7 @@ export default function Home() {
   const [rightOpen, setRightOpen] = useState(false); // Default false for the clean look
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { conversations, isLoading: convsLoading, remove } = useConversations();
   const { pendingApprovals } = useApprovals();
@@ -51,6 +52,10 @@ export default function Home() {
     { id: 'documents' as RightTab, label: 'Docs', icon: <BookOpen size={16} /> },
     { id: 'activity' as RightTab, label: 'Activity', icon: <Activity size={16} /> },
   ];
+
+  const filteredConversations = conversations.filter((c: { id: string; title: string }) => 
+    c.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex h-screen w-screen bg-[#f8f9fa]">
@@ -86,13 +91,26 @@ export default function Home() {
               {sidebarExpanded && <span className="text-sm font-semibold">New Chat</span>}
             </button>
             
-            <button
-              className={`flex items-center gap-3 p-2.5 rounded-xl text-gray-700 hover:bg-gray-200/60 transition-colors w-full ${!sidebarExpanded && 'justify-center'}`}
-              title="Search"
-            >
-              <Search size={18} className="flex-shrink-0" />
-              {sidebarExpanded && <span className="text-sm font-medium">Search</span>}
-            </button>
+            {sidebarExpanded ? (
+              <div className="relative w-full">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search history..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => setSidebarExpanded(true)}
+                className="flex items-center justify-center p-2.5 rounded-xl text-gray-700 hover:bg-gray-200/60 transition-colors w-full"
+                title="Search"
+              >
+                <Search size={18} className="flex-shrink-0" />
+              </button>
+            )}
           </div>
 
           {/* App Tools (Right Panel triggers) */}
@@ -141,7 +159,10 @@ export default function Home() {
               <>
                 <div className="px-2 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">History</div>
                 {convsLoading && <div className="px-2 text-xs text-gray-400">Loading...</div>}
-                {!convsLoading && conversations.map((conv: { id: string; title: string }) => (
+                {!convsLoading && filteredConversations.length === 0 && (
+                  <div className="px-2 text-xs text-gray-400 py-4 text-center">No results found.</div>
+                )}
+                {!convsLoading && filteredConversations.map((conv: { id: string; title: string }) => (
                   <button
                     key={conv.id}
                     onClick={() => handleSelectConv(conv.id)}

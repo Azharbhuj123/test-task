@@ -36,6 +36,7 @@ model Message {
   conversationId String
   role           String       // USER, ASSISTANT, SYSTEM, TOOL
   content        String
+  attachments    String?
   createdAt      DateTime     @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)

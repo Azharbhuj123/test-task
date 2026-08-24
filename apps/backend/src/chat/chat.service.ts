@@ -2,7 +2,7 @@ import prisma from '../lib/prisma';
 import { agentService } from '../agent/agent.service';
 
 export class ChatService {
-  async handleChat(message: string, conversationId?: string) {
+  async handleChat(message: string, conversationId?: string, attachments?: { type: string, url: string, name: string }[]) {
     let convId = conversationId;
     
     if (!convId) {
@@ -24,7 +24,8 @@ export class ChatService {
       data: {
         conversationId: convId,
         role: 'USER',
-        content: message
+        content: message,
+        attachments: attachments && attachments.length > 0 ? JSON.stringify(attachments) : null
       }
     });
 

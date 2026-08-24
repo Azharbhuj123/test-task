@@ -22,10 +22,49 @@ export class AgentService {
     if (!conversation) throw new Error("Conversation not found");
 
     // Build message history for OpenAI
-    const messages: any[] = conversation.messages.map(m => ({
-      role: m.role.toLowerCase() as 'user' | 'assistant',
-      content: m.content
-    }));
+    const messages: any[] = conversation.messages.map(m => {
+      let content: any = m.content;
+      
+      if (m.attachments) {
+        try {
+          const parsed = JSON.parse(m.attachments);
+          const contentArray: any[] = [];
+          
+          let textContent = m.content || '';
+          
+          for (const att of parsed) {
+            if (att.type === 'image') {
+              contentArray.push({ type: 'image_url', image_url: { url: att.url } });
+            } else {
+              try {
+                const base64Data = att.url.split(',')[1];
+                if (base64Data) {
+                  const decoded = Buffer.from(base64Data, 'base64').toString('utf8');
+                  textContent += `\n\n[Attached Document: ${att.name}]\n${decoded}`;
+                }
+              } catch (e) {
+                console.error('Failed to decode document', e);
+              }
+            }
+          }
+          
+          if (textContent) {
+            contentArray.unshift({ type: 'text', text: textContent });
+          }
+          
+          if (contentArray.length > 0) {
+            content = contentArray;
+          }
+        } catch (e) {
+          console.error('Failed to parse attachments', e);
+        }
+      }
+
+      return {
+        role: m.role.toLowerCase() as 'user' | 'assistant',
+        content
+      };
+    });
 
     // Augment system prompt with RAG context
     const ragContext = await ragService.searchKnowledge(message);

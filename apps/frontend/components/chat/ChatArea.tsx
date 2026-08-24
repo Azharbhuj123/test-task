@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { chat as sendChatMessage } from '../../lib/api';
 import { getConversationMessages } from '../../lib/conversations';
-import { ChatMessage } from '../../types/chat';
+import { ChatMessage, Attachment } from '../../types/chat';
 import { MessageBubble } from './MessageBubble';
 import { ChatInput } from './ChatInput';
 import { EmptyState } from './EmptyState';
@@ -31,12 +31,13 @@ export function ChatArea({ conversationId, onConversationCreated }: ChatAreaProp
       return;
     }
     // Load messages for this conversation
-    getConversationMessages(conversationId).then((msgs: { id: string; role: string; content: string; createdAt: string }[]) => {
+    getConversationMessages(conversationId).then((msgs: { id: string; role: string; content: string; createdAt: string; attachments?: string }[]) => {
       setMessages(msgs.map(m => ({
         id: m.id,
         role: m.role === 'USER' ? 'user' : 'assistant',
         content: m.content,
         createdAt: m.createdAt,
+        attachments: m.attachments ? JSON.parse(m.attachments) : undefined
       })));
     }).catch(() => setMessages([]));
   }, [conversationId]);
@@ -46,20 +47,21 @@ export function ChatArea({ conversationId, onConversationCreated }: ChatAreaProp
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || isLoading) return;
+  const sendMessage = useCallback(async (text: string, attachments?: Attachment[]) => {
+    if ((!text.trim() && (!attachments || attachments.length === 0)) || isLoading) return;
 
     const userMsg: ChatMessage = {
       id: `tmp-${Date.now()}`,
       role: 'user',
       content: text,
       createdAt: new Date().toISOString(),
+      attachments,
     };
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessage(text, activeConvId);
+      const response = await sendChatMessage(text, activeConvId, attachments);
 
       // Track the new conversation ID
       if (!activeConvId && response.conversationId) {
@@ -119,7 +121,7 @@ export function ChatArea({ conversationId, onConversationCreated }: ChatAreaProp
             <ChatInput onSend={sendMessage} disabled={isLoading} />
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto px-4 py-6 w-full pb-32">
+          <div className="max-w-3xl mx-auto px-4 py-6 w-full pb-32">
             {messages.map((msg, i) => (
               <MessageBubble key={msg.id} message={msg} isLast={i === messages.length - 1} />
             ))}

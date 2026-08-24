@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChatMessage } from '../../types/chat';
-import { Bot, User, ShieldAlert, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ChatMessage, Attachment } from '../../types/chat';
+import { Bot, User, ShieldAlert, AlertCircle, CheckCircle2, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { DynamicChart } from './DynamicChart';
@@ -46,7 +46,25 @@ export function MessageBubble({ message, isLast }: { message: ChatMessage; isLas
             </div>
           )}
           {isUser ? (
-            message.content
+            <div className="flex flex-col gap-3">
+              {message.attachments && message.attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {message.attachments.map(att => (
+                    <div key={att.id} className="relative rounded-lg overflow-hidden border border-white/20 bg-white/10 flex items-center justify-center">
+                      {att.type === 'image' ? (
+                        <img src={att.url} alt={att.name} className="h-20 w-20 object-cover" />
+                      ) : (
+                        <div className="h-20 w-20 flex flex-col items-center justify-center gap-1.5 p-2 text-white">
+                          <FileText size={24} />
+                          <span className="text-[9px] font-medium truncate w-full text-center">{att.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {message.content && <span>{message.content}</span>}
+            </div>
           ) : (
             <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 leading-relaxed w-full">
               <ReactMarkdown

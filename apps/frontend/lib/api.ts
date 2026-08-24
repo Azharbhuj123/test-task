@@ -12,8 +12,8 @@ export const getHealth = async () => {
 };
 
 // Chat
-export const chat = async (message: string, conversationId?: string) => {
-  const { data } = await api.post('/api/chat', { message, conversationId });
+export const chat = async (message: string, conversationId?: string, attachments?: { type: string, url: string, name: string }[]) => {
+  const { data } = await api.post('/api/chat', { message, conversationId, attachments });
   return data.data;
 };
 
