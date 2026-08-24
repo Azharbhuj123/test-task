@@ -11,6 +11,11 @@
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces"
   },
+  "dependencies": {
+    "lightningcss": "^1.32.0",
+    "@tailwindcss/node": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0"
+  },
   "optionalDependencies": {
     "lightningcss-linux-x64-gnu": "1.32.0",
     "lightningcss-linux-x64-musl": "1.32.0"
