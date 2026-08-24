@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { Approval } from "../../types/approval";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { Badge } from "../ui/Badge";
-import { Check, X, ShieldAlert, ArrowRight } from "lucide-react";
+import { Check, X, ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ApprovalCardProps {
   approval: Approval;
@@ -12,84 +10,102 @@ interface ApprovalCardProps {
   disabled: boolean;
 }
 
+const TOOL_LABELS: Record<string, string> = {
+  update_campaign_budget: 'Update Campaign Budget',
+  pause_campaign: 'Pause Campaign',
+  resume_campaign: 'Resume Campaign',
+};
+
+function formatArgKey(key: string): string {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+}
+
+function formatArgValue(key: string, value: any): string {
+  if (key === 'newBudget') return `$${value}`;
+  return String(value);
+}
+
 export function ApprovalCard({ approval, onApprove, onReject, disabled }: ApprovalCardProps) {
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [showRaw, setShowRaw] = useState(false);
 
-  // Parse arguments to display nicely
-  let parsedArgs: any = {};
+  let parsedArgs: Record<string, any> = {};
   try {
     parsedArgs = JSON.parse(approval.toolArguments);
-  } catch (e) {}
+  } catch {}
 
   const handleApprove = async () => {
     setIsApproving(true);
-    try {
-      await onApprove(approval.id);
-    } finally {
-      setIsApproving(false);
-    }
+    try { await onApprove(approval.id); }
+    finally { setIsApproving(false); }
   };
 
   const handleReject = async () => {
     setIsRejecting(true);
-    try {
-      await onReject(approval.id);
-    } finally {
-      setIsRejecting(false);
-    }
+    try { await onReject(approval.id); }
+    finally { setIsRejecting(false); }
   };
 
   const isActionDisabled = disabled || isApproving || isRejecting || approval.status !== 'PENDING';
+  const label = TOOL_LABELS[approval.toolName] ?? approval.toolName.replace(/_/g, ' ');
+  const timeAgo = new Date(approval.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <Card className="mb-4 border-amber-200 bg-amber-50/30 overflow-hidden">
-      <CardHeader className="pb-3 px-4 pt-4 bg-white/50 border-b">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-1.5 text-gray-900">
-            <ShieldAlert className="w-4 h-4 text-amber-500" />
-            {approval.toolName === 'update_campaign_budget' ? 'Budget Update' : approval.toolName.replace(/_/g, ' ')}
-          </CardTitle>
-          <Badge variant="warning">PENDING</Badge>
+    <div className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm mb-3">
+      {/* Header */}
+      <div className="bg-amber-50 px-4 py-3 border-b border-amber-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />
+          <span className="text-sm font-semibold text-gray-800">{label}</span>
         </div>
-      </CardHeader>
-      <CardContent className="pt-4 px-4 pb-0 text-sm">
-        <div className="space-y-3 mb-4">
-          {parsedArgs.campaignId && (
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-gray-500">Campaign ID:</span>
-              <span className="font-mono text-gray-900 text-xs">{parsedArgs.campaignId}</span>
-            </div>
-          )}
-          {parsedArgs.newBudget && (
-            <div className="flex justify-between border-b pb-2 items-center">
-              <span className="text-gray-500">New Budget:</span>
-              <span className="font-semibold text-green-600 flex items-center gap-1">
-                <ArrowRight className="w-3 h-3" />
-                ${parsedArgs.newBudget}
-              </span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="px-4 pb-4 pt-2 flex gap-2">
-        <Button 
-          variant="outline" 
-          className="w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 h-9 text-xs" 
+        <span className="text-xs text-gray-400">{timeAgo}</span>
+      </div>
+
+      {/* Arguments */}
+      <div className="px-4 py-3">
+        <table className="w-full text-sm">
+          <tbody>
+            {Object.entries(parsedArgs).map(([k, v]) => (
+              <tr key={k} className="border-b last:border-0">
+                <td className="py-1.5 text-gray-500 font-medium pr-4 text-xs">{formatArgKey(k)}</td>
+                <td className="py-1.5 text-gray-900 font-semibold text-xs text-right">{formatArgValue(k, v)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Actions */}
+      <div className="px-4 pb-4 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
           onClick={handleReject}
           disabled={isActionDisabled}
+          aria-label="Reject action"
         >
-          {isRejecting ? 'Rejecting...' : <><X className="w-4 h-4 mr-1" /> Reject</>}
+          {isRejecting ? (
+            <span className="flex items-center gap-1"><span className="animate-spin">⟳</span> Rejecting...</span>
+          ) : (
+            <span className="flex items-center gap-1"><X size={14} /> Reject</span>
+          )}
         </Button>
-        <Button 
-          variant="default" 
-          className="w-full bg-amber-500 hover:bg-amber-600 text-white h-9 text-xs" 
+        <Button
+          size="sm"
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0"
           onClick={handleApprove}
           disabled={isActionDisabled}
+          aria-label="Approve action"
         >
-          {isApproving ? 'Approving...' : <><Check className="w-4 h-4 mr-1" /> Approve</>}
+          {isApproving ? (
+            <span className="flex items-center gap-1"><span className="animate-spin">⟳</span> Approving...</span>
+          ) : (
+            <span className="flex items-center gap-1"><Check size={14} /> Approve</span>
+          )}
         </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

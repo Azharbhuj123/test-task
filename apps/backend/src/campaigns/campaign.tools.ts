@@ -4,11 +4,14 @@ import { campaignService } from './campaign.service';
 
 export const getCampaignsTool: ToolDefinition = {
   name: 'get_campaigns',
-  description: 'Get all campaigns, optionally filtered by status (ACTIVE, PAUSED, COMPLETED, DRAFT)',
+  description: 'Get all campaigns. Optionally filter by status. Valid statuses: ACTIVE, PAUSED, COMPLETED, DRAFT.',
   parameters: {
     type: 'object',
     properties: {
-      status: { type: 'string', description: 'Optional status filter' }
+      status: {
+        type: 'string',
+        description: 'Optional status filter: ACTIVE, PAUSED, COMPLETED, or DRAFT'
+      }
     }
   },
   zod_schema: z.object({
@@ -22,11 +25,14 @@ export const getCampaignsTool: ToolDefinition = {
 
 export const getCampaignTool: ToolDefinition = {
   name: 'get_campaign',
-  description: 'Get campaign details by its unique ID',
+  description: 'Get details of a specific campaign by its ID.',
   parameters: {
     type: 'object',
     properties: {
-      campaignId: { type: 'string' }
+      campaignId: {
+        type: 'string',
+        description: 'The unique ID of the campaign'
+      }
     },
     required: ['campaignId']
   },
@@ -41,11 +47,14 @@ export const getCampaignTool: ToolDefinition = {
 
 export const getCampaignMetricsTool: ToolDefinition = {
   name: 'get_campaign_metrics',
-  description: 'Get all metrics for a campaign',
+  description: 'Get all historical performance metrics for a campaign (impressions, clicks, spend, conversions, conversion rate).',
   parameters: {
     type: 'object',
     properties: {
-      campaignId: { type: 'string' }
+      campaignId: {
+        type: 'string',
+        description: 'The unique ID of the campaign'
+      }
     },
     required: ['campaignId']
   },
@@ -60,12 +69,18 @@ export const getCampaignMetricsTool: ToolDefinition = {
 
 export const getRecentCampaignMetricsTool: ToolDefinition = {
   name: 'get_recent_campaign_metrics',
-  description: 'Get recent metrics for a campaign',
+  description: 'Get the most recent N days of performance metrics for a campaign. Useful for trend analysis.',
   parameters: {
     type: 'object',
     properties: {
-      campaignId: { type: 'string' },
-      limit: { type: 'number', description: 'Number of recent metrics to fetch (default 5)' }
+      campaignId: {
+        type: 'string',
+        description: 'The unique ID of the campaign'
+      },
+      limit: {
+        type: 'number',
+        description: 'Number of recent days to fetch (default 5)'
+      }
     },
     required: ['campaignId']
   },
@@ -74,19 +89,25 @@ export const getRecentCampaignMetricsTool: ToolDefinition = {
     limit: z.number().optional()
   }),
   risk: 'READ',
-  execute: async (args: { campaignId: string, limit?: number }) => {
+  execute: async (args: { campaignId: string; limit?: number }) => {
     return campaignService.getRecentCampaignMetrics(args.campaignId, args.limit);
   }
 };
 
 export const updateCampaignBudgetTool: ToolDefinition = {
   name: 'update_campaign_budget',
-  description: 'Update the budget of a campaign. Requires human approval.',
+  description: 'Update the daily budget of a campaign. This is a HIGH-RISK action that requires human approval before execution.',
   parameters: {
     type: 'object',
     properties: {
-      campaignId: { type: 'string' },
-      newBudget: { type: 'number', description: 'The new budget amount' }
+      campaignId: {
+        type: 'string',
+        description: 'The unique ID of the campaign to update'
+      },
+      newBudget: {
+        type: 'number',
+        description: 'The new daily budget amount in USD'
+      }
     },
     required: ['campaignId', 'newBudget']
   },
@@ -95,18 +116,21 @@ export const updateCampaignBudgetTool: ToolDefinition = {
     newBudget: z.number().positive()
   }),
   risk: 'HIGH_RISK',
-  execute: async (args: { campaignId: string, newBudget: number }) => {
+  execute: async (args: { campaignId: string; newBudget: number }) => {
     return campaignService.updateCampaignBudget(args.campaignId, args.newBudget);
   }
 };
 
 export const pauseCampaignTool: ToolDefinition = {
   name: 'pause_campaign',
-  description: 'Pause a campaign. Requires human approval.',
+  description: 'Pause an active campaign. This is a HIGH-RISK action that requires human approval before execution.',
   parameters: {
     type: 'object',
     properties: {
-      campaignId: { type: 'string' }
+      campaignId: {
+        type: 'string',
+        description: 'The unique ID of the campaign to pause'
+      }
     },
     required: ['campaignId']
   },
@@ -121,11 +145,14 @@ export const pauseCampaignTool: ToolDefinition = {
 
 export const resumeCampaignTool: ToolDefinition = {
   name: 'resume_campaign',
-  description: 'Resume a paused campaign.',
+  description: 'Resume a paused campaign. This is a low-risk action that does NOT require human approval.',
   parameters: {
     type: 'object',
     properties: {
-      campaignId: { type: 'string' }
+      campaignId: {
+        type: 'string',
+        description: 'The unique ID of the campaign to resume'
+      }
     },
     required: ['campaignId']
   },

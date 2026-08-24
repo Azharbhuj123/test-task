@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { ToolRegistry } from './agent.types';
 import {
   getCampaignsTool,
@@ -8,6 +9,7 @@ import {
   pauseCampaignTool,
   resumeCampaignTool
 } from '../campaigns/campaign.tools';
+import { searchCampaignKnowledgeTool } from '../rag/rag.tools';
 
 export const toolRegistry: ToolRegistry = {
   [getCampaignsTool.name]: getCampaignsTool,
@@ -16,7 +18,8 @@ export const toolRegistry: ToolRegistry = {
   [getRecentCampaignMetricsTool.name]: getRecentCampaignMetricsTool,
   [updateCampaignBudgetTool.name]: updateCampaignBudgetTool,
   [pauseCampaignTool.name]: pauseCampaignTool,
-  [resumeCampaignTool.name]: resumeCampaignTool
+  [resumeCampaignTool.name]: resumeCampaignTool,
+  [searchCampaignKnowledgeTool.name]: searchCampaignKnowledgeTool,
 };
 
 export const getOpenAITools = () => {

@@ -21,126 +21,142 @@ export class AgentService {
 
     if (!conversation) throw new Error("Conversation not found");
 
+    // Build message history for OpenAI
     const messages: any[] = conversation.messages.map(m => ({
       role: m.role.toLowerCase() as 'user' | 'assistant',
       content: m.content
     }));
 
+    // Augment system prompt with RAG context
     const ragContext = await ragService.searchKnowledge(message);
-    const systemPromptWithRag = `${SYSTEM_PROMPT}\n\nRelevant Knowledge Base Context:\n${ragContext}`;
+    const systemPromptWithRag = ragContext && ragContext !== 'Knowledge base unavailable.'
+      ? `${SYSTEM_PROMPT}\n\n---\n## Relevant Knowledge Base Context\n${ragContext}`
+      : SYSTEM_PROMPT;
 
     messages.unshift({ role: 'system', content: systemPromptWithRag });
 
     let iterations = 0;
-    
+
     while (iterations < MAX_AGENT_ITERATIONS) {
       iterations++;
-      console.log(`[Agent] Starting request (Iteration ${iterations})`);
+      console.log(`[Agent] Iteration ${iterations}`);
 
       let response;
       try {
         response = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
-          messages: messages,
+          messages,
           tools: getOpenAITools(),
           tool_choice: 'auto'
         });
       } catch (e: any) {
-        console.error('[Agent] OpenAI API failure', e);
-        throw new Error('OpenAI API failure: ' + e.message);
+        console.error('[Agent] OpenAI API error:', e.message);
+        throw new Error('OpenAI API error: ' + e.message);
       }
 
       const responseMessage = response.choices[0].message;
+      const stopReason = response.choices[0].finish_reason;
+
+      // No tool calls — return final response
+      if (!responseMessage.tool_calls || responseMessage.tool_calls.length === 0 || stopReason === 'stop') {
+        return {
+          conversationId,
+          message: responseMessage.content || 'No response generated.',
+          status: 'completed'
+        };
+      }
+
+      // Push the assistant message with tool_calls into history
       messages.push(responseMessage);
 
-      if (responseMessage.tool_calls) {
-        let needsApproval = false;
-        let approvalId: string | undefined;
+      // Track whether any high-risk approval was created this iteration
+      let approvalCreatedId: string | undefined;
 
-        for (const toolCall of responseMessage.tool_calls) {
-          if (toolCall.type !== 'function') continue;
-          
-          console.log(`[Agent] OpenAI requested tool: ${toolCall.function.name}`);
-          const tool = toolRegistry[toolCall.function.name];
-          
-          if (!tool) {
+      for (const toolCall of responseMessage.tool_calls) {
+        if (toolCall.type !== 'function') continue;
+
+        const toolName = toolCall.function.name;
+        const tool = toolRegistry[toolName];
+        console.log(`[Agent] Tool requested: ${toolName}`);
+
+        if (!tool) {
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: `Error: Tool "${toolName}" not found in registry.`
+          });
+          continue;
+        }
+
+        try {
+          const rawArgs = JSON.parse(toolCall.function.arguments);
+          const parsedArgs = tool.zod_schema.parse(rawArgs);
+
+          if (tool.risk === 'HIGH_RISK') {
+            // Create approval record — do NOT execute
+            const approval = await approvalService.createApprovalRequest(
+              conversationId,
+              toolName,
+              parsedArgs
+            );
+            approvalCreatedId = approval.id;
+            console.log(`[Agent] Approval created: ${approval.id} for ${toolName}`);
+
             messages.push({
               role: 'tool',
               tool_call_id: toolCall.id,
-              content: `Error: Tool ${toolCall.function.name} not found.`
+              content: JSON.stringify({
+                status: 'pending_approval',
+                approvalId: approval.id,
+                message: `Action "${toolName}" requires human approval. An approval request has been created. The user must approve or reject it from the Pending Approvals panel.`
+              })
             });
-            continue;
+          } else {
+            // Execute directly
+            const result = await tool.execute(parsedArgs);
+            console.log(`[Agent] Tool "${toolName}" executed successfully`);
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result)
+            });
           }
-
-          try {
-            const args = JSON.parse(toolCall.function.arguments);
-            const parsedArgs = tool.zod_schema.parse(args);
-            
-            if (tool.risk === 'HIGH_RISK') {
-              console.log(`[Approval] Created approval request for ${toolCall.function.name}`);
-              const approval = await approvalService.createApprovalRequest(conversationId, tool.name, parsedArgs);
-              needsApproval = true;
-              approvalId = approval.id;
-              
-              messages.push({
-                role: 'tool',
-                tool_call_id: toolCall.id,
-                content: JSON.stringify({
-                  status: 'pending_approval',
-                  approvalId: approval.id,
-                  message: 'This action requires human approval before execution.'
-                })
-              });
-            } else {
-              console.log(`[Tool] Executing ${toolCall.function.name}`);
-              const result = await tool.execute(parsedArgs);
-              console.log(`[Agent] Tool result returned`);
-              messages.push({
-                role: 'tool',
-                tool_call_id: toolCall.id,
-                content: JSON.stringify(result)
-              });
-            }
-          } catch (e: any) {
-             messages.push({
-                role: 'tool',
-                tool_call_id: toolCall.id,
-                content: `Error executing tool: ${e.message}`
-             });
-          }
+        } catch (e: any) {
+          console.error(`[Agent] Error executing tool "${toolName}":`, e.message);
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: `Error: ${e.message}`
+          });
         }
-      } else {
-        const finalContent = responseMessage.content || '';
-        
-        // Check if an approval was requested recently in the chat history
-        const pendingResponses = messages.filter(m => 
-           m.role === 'tool' && 
-           typeof m.content === 'string' && 
-           m.content.includes('pending_approval')
-        );
-        
-        let status: 'completed' | 'pending_approval' = 'completed';
-        let approvalId: string | undefined;
+      }
 
-        if (pendingResponses.length > 0) {
-           status = 'pending_approval';
-           const lastPending = pendingResponses[pendingResponses.length - 1];
-           try {
-             const parsed = JSON.parse(lastPending.content);
-             approvalId = parsed.approvalId;
-           } catch (e) {}
+      // If we created an approval this iteration, do one more LLM call to get
+      // a proper user-facing message, then return with pending_approval status
+      if (approvalCreatedId) {
+        let finalMessage = `I've submitted an approval request for this action. Please review it in the **Pending Approvals** panel on the left and click **Approve** to execute it.`;
+        try {
+          const finalResponse = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages
+          });
+          finalMessage = finalResponse.choices[0].message.content || finalMessage;
+        } catch (e) {
+          // Use default message if this call fails
         }
 
         return {
           conversationId,
-          message: finalContent,
-          status,
-          approvalId
+          message: finalMessage,
+          status: 'pending_approval',
+          approvalId: approvalCreatedId
         };
       }
+
+      // Otherwise continue the loop (tool results were added, get next response)
     }
 
-    throw new Error('Agent execution limit reached.');
+    throw new Error('Agent reached maximum iterations without a final response.');
   }
 }
 

@@ -1,21 +1,32 @@
 import { useBackendHealth } from "../../hooks/useBackendHealth";
-import { Badge } from "../ui/Badge";
-import { BotMessageSquare } from "lucide-react";
+import { BotMessageSquare, Wifi, WifiOff } from "lucide-react";
 
 export function ChatHeader() {
   const { isConnected } = useBackendHealth();
 
   return (
-    <header className="h-14 bg-white border-b flex items-center justify-between px-6 flex-shrink-0 z-10">
-      <div className="flex items-center gap-2 text-gray-900 font-semibold text-lg">
-        <BotMessageSquare className="w-5 h-5 text-blue-600" />
-        AI Campaign Assistant
+    <header className="h-14 bg-white border-b flex items-center justify-between px-5 flex-shrink-0">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <BotMessageSquare className="w-4.5 h-4.5 text-white" size={18} />
+        </div>
+        <div>
+          <p className="font-semibold text-gray-900 text-sm leading-tight">AI Campaign Assistant</p>
+          <p className="text-xs text-gray-400 leading-tight">Powered by OpenAI · Tool Calling · RAG</p>
+        </div>
       </div>
-      <div>
-        <Badge variant={isConnected ? "success" : "destructive"} className="px-3 rounded-full">
-          <span className={`w-1.5 h-1.5 rounded-full mr-2 ${isConnected ? 'bg-white' : 'bg-white'}`} />
-          {isConnected ? 'Connected' : 'Backend Unavailable'}
-        </Badge>
+      <div className="flex items-center gap-1.5 text-xs font-medium">
+        {isConnected ? (
+          <>
+            <Wifi size={13} className="text-green-500" />
+            <span className="text-green-600">Connected</span>
+          </>
+        ) : (
+          <>
+            <WifiOff size={13} className="text-red-400" />
+            <span className="text-red-500">Backend Unavailable</span>
+          </>
+        )}
       </div>
     </header>
   );

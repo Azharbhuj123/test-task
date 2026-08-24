@@ -5,6 +5,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
+  // Clean up existing data first so re-running seed is safe
+  await prisma.toolExecution.deleteMany();
+  await prisma.approvalRequest.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.campaignMetric.deleteMany();
+  await prisma.campaign.deleteMany();
+
   const user = await prisma.user.upsert({
     where: { email: 'demo@example.com' },
     update: {},
@@ -13,6 +21,7 @@ async function main() {
       email: 'demo@example.com',
     },
   });
+  console.log(`Demo user: ${user.id}`);
 
   const campaignsData = [
     {
@@ -66,35 +75,31 @@ async function main() {
   ];
 
   for (const c of campaignsData) {
-    const campaign = await prisma.campaign.create({
-      data: c,
-    });
+    const campaign = await prisma.campaign.create({ data: c });
+    console.log(`  Created: ${campaign.name} (${campaign.id})`);
 
-    const dates = [
-      '2026-08-20T00:00:00Z',
-      '2026-08-21T00:00:00Z',
-      '2026-08-22T00:00:00Z',
-      '2026-08-23T00:00:00Z',
-      '2026-08-24T00:00:00Z',
-    ];
+    // Seed 7 days of metrics
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const fluctuation = 0.85 + Math.random() * 0.3; // 85%-115% daily variation
 
-    for (let i = 0; i < dates.length; i++) {
-      const multiplier = 1 + (i * 0.05); // slight variation
       await prisma.campaignMetric.create({
         data: {
           campaignId: campaign.id,
-          date: new Date(dates[i]),
-          impressions: Math.floor((c.impressions / 5) * multiplier),
-          clicks: Math.floor((c.clicks / 5) * multiplier),
-          spend: (c.spend / 5) * multiplier,
-          conversions: Math.floor((c.conversions / 5) * multiplier),
-          conversionRate: c.conversionRate,
+          date,
+          impressions: Math.floor((c.impressions / 7) * fluctuation),
+          clicks: Math.floor((c.clicks / 7) * fluctuation),
+          spend: parseFloat(((c.spend / 7) * fluctuation).toFixed(2)),
+          conversions: Math.floor((c.conversions / 7) * fluctuation),
+          conversionRate: parseFloat((c.conversionRate * fluctuation).toFixed(2)),
         }
       });
     }
   }
 
-  console.log('Database seeding complete.');
+  console.log('Database seeding complete!');
 }
 
 main()
