@@ -22,7 +22,7 @@ export class AgentService {
     if (!conversation) throw new Error("Conversation not found");
 
     // Build message history for OpenAI
-    const messages: any[] = conversation.messages.map(m => {
+    const messages: any[] = conversation.messages.map((m: any) => {
       let content: any = m.content;
       
       if (m.attachments) {

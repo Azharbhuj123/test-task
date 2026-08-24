@@ -16,7 +16,7 @@ export const getConversations = async (_req: Request, res: Response) => {
       }
     });
 
-    const data = conversations.map(c => ({
+    const data = conversations.map((c: any) => ({
       id: c.id,
       title: c.title || (c.messages[0]?.content?.slice(0, 60) ?? 'New Conversation'),
       messageCount: c._count.messages,
