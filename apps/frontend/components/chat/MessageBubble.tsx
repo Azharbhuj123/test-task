@@ -84,19 +84,32 @@ export function MessageBubble({ message, isLast }: { message: ChatMessage; isLas
 
         {/* Pending Approval Banner */}
         {isPending && (
-          <div className="mt-2 w-full max-w-sm bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
-            <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="mt-2 w-full max-w-sm bg-purple-50/50 border border-purple-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+            <ShieldAlert className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-bold text-amber-900">Approval Required</p>
-              <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
+              <p className="text-xs font-bold text-purple-900">Approval Required</p>
+              <p className="text-[11px] text-purple-700 mt-0.5 leading-snug">
                 Check the <strong>Approvals</strong> panel → click <strong>Approve</strong> to execute the action.
               </p>
             </div>
           </div>
         )}
 
-        {/* Success execution note */}
-        {message.status === 'completed' && !isUser && isLast && (
+        {/* Success Approval Banner */}
+        {message.status === 'completed' && message.approvalId && (
+          <div className="mt-2 w-full max-w-sm bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+            <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-green-900">Task Completed</p>
+              <p className="text-[11px] text-green-700 mt-0.5 leading-snug">
+                Approval was granted and the action executed successfully!
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Success execution note (for non-approval tasks) */}
+        {message.status === 'completed' && !message.approvalId && !isUser && isLast && (
           <div className="mt-1.5 flex items-center gap-1 text-[10px] text-gray-400">
             <CheckCircle2 size={10} className="text-green-500" />
             Completed
