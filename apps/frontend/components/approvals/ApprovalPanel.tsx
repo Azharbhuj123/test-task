@@ -12,10 +12,10 @@ export function ApprovalPanel() {
     <div className="flex flex-col h-full bg-gray-50 border-r w-full">
       {/* Header */}
       <div className="h-14 flex items-center justify-between px-5 border-b bg-white flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-gray-800 text-sm">Pending Approvals</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="font-bold text-gray-900 text-[15px]">Pending Approvals</h2>
           {pendingApprovals.length > 0 && (
-            <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-200">
+            <span className="bg-purple-50 text-purple-600 text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border border-purple-200">
               {pendingApprovals.length}
             </span>
           )}

@@ -1,20 +1,11 @@
 import React from 'react';
 import { ChatMessage } from '../../types/chat';
 import { Bot, User, ShieldAlert, AlertCircle, CheckCircle2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { DynamicChart } from './DynamicChart';
 
-function renderContent(content: string): React.ReactNode {
-  return content.split('\n').map((line, i, arr) => {
-    const html = line
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/`(.*?)`/g, '<code style="background:#eff6ff;color:#1d4ed8;padding:1px 5px;border-radius:4px;font-size:0.8em;font-family:monospace">$1</code>');
-    return (
-      <React.Fragment key={i}>
-        <span dangerouslySetInnerHTML={{ __html: html }} />
-        {i < arr.length - 1 && <br />}
-      </React.Fragment>
-    );
-  });
-}
+
 
 export function MessageBubble({ message, isLast }: { message: ChatMessage; isLast: boolean }) {
   const isUser = message.role === 'user';
@@ -24,10 +15,10 @@ export function MessageBubble({ message, isLast }: { message: ChatMessage; isLas
     <div className={`flex items-start gap-3 mb-6 ${isUser ? 'flex-row-reverse' : ''}`}>
 
       {/* Avatar */}
-      <div className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${
+      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm mt-4 ${
         isUser
-          ? 'bg-blue-600 text-white'
-          : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'
+          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+          : 'bg-[#1e293b] text-white'
       }`}>
         {isUser ? <User size={14} /> : <Bot size={14} />}
       </div>
@@ -41,12 +32,12 @@ export function MessageBubble({ message, isLast }: { message: ChatMessage; isLas
         </span>
 
         {/* Bubble */}
-        <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words shadow-sm ${
+        <div className={`px-5 py-4 rounded-[1.25rem] text-sm leading-relaxed whitespace-pre-wrap break-words ${
           isUser
-            ? 'bg-blue-600 text-white rounded-tr-sm'
+            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
             : message.isError
-            ? 'bg-red-50 text-red-800 border border-red-200 rounded-tl-sm'
-            : 'bg-gray-100 text-gray-800 rounded-tl-sm'
+            ? 'bg-red-50 text-red-800 border border-red-200'
+            : 'bg-[#f4f5f7] text-[#1f2937]'
         }`}>
           {message.isError && (
             <div className="flex items-center gap-1.5 mb-1.5 text-red-600">
@@ -54,7 +45,41 @@ export function MessageBubble({ message, isLast }: { message: ChatMessage; isLas
               <span className="text-xs font-semibold">Error</span>
             </div>
           )}
-          {isUser ? message.content : renderContent(message.content)}
+          {isUser ? (
+            message.content
+          ) : (
+            <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 leading-relaxed w-full">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  strong: ({...props}) => <strong className="text-gradient-purple font-bold" {...props} />,
+                  code: ({inline, children, node: _node, className: _className, ...props}: {inline?: boolean, children?: React.ReactNode, node?: unknown, className?: string} & React.HTMLAttributes<HTMLElement>) => {
+                    const match = /language-(\w+)/.exec(_className || '');
+                    const codeString = String(children).replace(/\n$/, '');
+                    
+                    if (!inline && match && match[1] === 'json') {
+                      try {
+                        const parsed = JSON.parse(codeString);
+                        if (parsed && parsed.type === 'chart') {
+                          return <DynamicChart data={parsed} />;
+                        }
+                      } catch (e) {
+                        // fallback to normal code block if parsing fails
+                      }
+                    }
+
+                    return inline ? (
+                      <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[0.85em] font-mono before:content-none after:content-none" {...props}>{children}</code>
+                    ) : (
+                      <code className="block bg-gray-800 text-gray-100 p-3 rounded-lg overflow-x-auto text-sm my-2 font-mono before:content-none after:content-none" {...props}>{children}</code>
+                    );
+                  }
+                }}
+              >
+                {message.content || ''}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
 
         {/* Pending Approval Banner */}

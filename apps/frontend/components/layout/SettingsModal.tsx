@@ -137,8 +137,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               disabled={isUpdating || !apiKeyInput.trim()}
               className={`px-4 py-2 text-xs font-semibold text-white rounded-lg transition-all flex items-center gap-1.5 ${
                 isUpdating || !apiKeyInput.trim()
-                  ? 'bg-blue-400 cursor-not-allowed opacity-70'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow active:scale-95'
+                  ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed opacity-70'
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow active:scale-95'
               }`}
             >
               {isUpdating && <Spinner className="w-3 h-3 text-white" />}

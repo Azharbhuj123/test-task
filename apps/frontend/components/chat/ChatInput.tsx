@@ -1,12 +1,10 @@
 import { useState, useRef } from 'react';
-import { Send, Zap } from 'lucide-react';
+import { Send, Paperclip, Image as ImageIcon, Globe } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (msg: string) => void;
   disabled?: boolean;
 }
-
-const QUICK = ['Show campaigns', 'Budget guidelines', 'Create campaign'];
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [value, setValue] = useState('');
@@ -39,59 +37,59 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const hasValue = value.trim().length > 0;
 
   return (
-    <div className="flex-shrink-0 border-t bg-white px-4 py-3">
-
-      {/* Quick actions */}
-      {!disabled && !hasValue && (
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-0.5">
-          {QUICK.map(q => (
-            <button
-              key={q}
-              onClick={() => onSend(q)}
-              className="flex-shrink-0 flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-blue-100 text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
-            >
-              <Zap size={10} />
-              {q}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Input row */}
-      <div className="flex items-end gap-3 max-w-3xl mx-auto">
-        <div className={`flex-1 flex items-end gap-2 bg-gray-50 border rounded-2xl px-4 py-3 transition-all ${
-          disabled ? 'opacity-60' : 'hover:border-blue-300 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50 focus-within:bg-white'
-        }`}>
+    <div className="w-full max-w-3xl mx-auto flex-shrink-0 px-4 pb-6">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm focus-within:shadow-md focus-within:border-gray-300 transition-all p-3 pt-4 flex flex-col gap-3">
+        
+        {/* Top Row: Input and "All Web" toggle */}
+        <div className="flex items-start gap-3 px-2">
           <textarea
             ref={textareaRef}
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={handleKey}
             onInput={handleInput}
-            placeholder="Ask about campaigns, request actions, search guidelines..."
+            placeholder="Ask whatever you want...."
             disabled={disabled}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none min-h-[24px] max-h-[120px] leading-6"
+            className="flex-1 resize-none bg-transparent text-sm text-gray-900 placeholder:text-gray-500 font-medium focus:outline-none min-h-[24px] max-h-[120px] leading-relaxed pt-1"
           />
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-[11px] font-semibold text-gray-700 hover:bg-gray-200 transition-colors flex-shrink-0">
+            <Globe size={12} />
+            All Web
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
         </div>
 
-        <button
-          onClick={submit}
-          disabled={!hasValue || disabled}
-          className={`flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-150 ${
-            hasValue && !disabled
-              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95'
-              : 'bg-gray-100 text-gray-300 cursor-not-allowed'
-          }`}
-          aria-label="Send"
-        >
-          <Send size={16} className={hasValue && !disabled ? '' : 'opacity-40'} />
-        </button>
-      </div>
+        {/* Bottom Row: Actions and Send button */}
+        <div className="flex items-center justify-between px-2 pt-2 border-t border-gray-50 mt-1">
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+              <Paperclip size={14} />
+              Add Attachment
+            </button>
+            <button className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+              <ImageIcon size={14} />
+              Use Image
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-medium text-gray-400">{value.length}/1000</span>
+            <button
+              onClick={submit}
+              disabled={!hasValue || disabled}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                hasValue && !disabled
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow hover:shadow-md'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <Send size={14} className={hasValue && !disabled ? '' : 'opacity-50'} />
+            </button>
+          </div>
+        </div>
 
-      <p className="text-center text-[10px] text-gray-300 mt-2">
-        High-risk actions (budget changes, pauses) require your explicit approval before execution.
-      </p>
+      </div>
     </div>
   );
 }

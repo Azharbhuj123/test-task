@@ -50,24 +50,24 @@ export function ApprovalCard({ approval, onApprove, onReject, disabled }: Approv
   const timeAgo = new Date(approval.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm mb-3">
+    <div className="bg-white border border-purple-200 rounded-xl overflow-hidden shadow-sm mb-4">
       {/* Header */}
-      <div className="bg-amber-50 px-4 py-3 border-b border-amber-100 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />
-          <span className="text-sm font-semibold text-gray-800">{label}</span>
+      <div className="bg-purple-50/50 px-4 py-3.5 border-b border-purple-100 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <ShieldAlert className="w-[18px] h-[18px] text-purple-500 flex-shrink-0" />
+          <span className="text-[15px] font-bold text-gray-800">{label}</span>
         </div>
-        <span className="text-xs text-gray-400">{timeAgo}</span>
+        <span className="text-xs text-gray-400 font-medium">{timeAgo}</span>
       </div>
 
       {/* Arguments */}
-      <div className="px-4 py-3">
+      <div className="px-5 py-4">
         <table className="w-full text-sm">
           <tbody>
             {Object.entries(parsedArgs).map(([k, v]) => (
-              <tr key={k} className="border-b last:border-0">
-                <td className="py-1.5 text-gray-500 font-medium pr-4 text-xs">{formatArgKey(k)}</td>
-                <td className="py-1.5 text-gray-900 font-semibold text-xs text-right">{formatArgValue(k, v)}</td>
+              <tr key={k} className="border-b border-gray-900/10 last:border-0">
+                <td className="py-2.5 text-gray-500 font-medium pr-4 align-top w-1/3">{formatArgKey(k)}</td>
+                <td className="py-2.5 text-gray-900 font-bold text-right break-words">{formatArgValue(k, v)}</td>
               </tr>
             ))}
           </tbody>
@@ -75,32 +75,30 @@ export function ApprovalCard({ approval, onApprove, onReject, disabled }: Approv
       </div>
 
       {/* Actions */}
-      <div className="px-4 pb-4 flex gap-2">
+      <div className="px-5 pb-5 flex gap-3">
         <Button
           variant="outline"
-          size="sm"
-          className="flex-1 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+          className="flex-1 text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300 font-medium h-10"
           onClick={handleReject}
           disabled={isActionDisabled}
           aria-label="Reject action"
         >
           {isRejecting ? (
-            <span className="flex items-center gap-1"><span className="animate-spin">⟳</span> Rejecting...</span>
+            <span className="flex items-center justify-center gap-1.5"><span className="animate-spin">⟳</span> Rejecting...</span>
           ) : (
-            <span className="flex items-center gap-1"><X size={14} /> Reject</span>
+            <span className="flex items-center justify-center gap-1.5"><X size={16} /> Reject</span>
           )}
         </Button>
         <Button
-          size="sm"
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0"
+          className="flex-1 bg-[#0f9d58] hover:bg-[#0d8a4d] text-white border-0 font-medium h-10"
           onClick={handleApprove}
           disabled={isActionDisabled}
           aria-label="Approve action"
         >
           {isApproving ? (
-            <span className="flex items-center gap-1"><span className="animate-spin">⟳</span> Approving...</span>
+            <span className="flex items-center justify-center gap-1.5"><span className="animate-spin">⟳</span> Approving...</span>
           ) : (
-            <span className="flex items-center gap-1"><Check size={14} /> Approve</span>
+            <span className="flex items-center justify-center gap-1.5"><Check size={16} /> Approve</span>
           )}
         </Button>
       </div>

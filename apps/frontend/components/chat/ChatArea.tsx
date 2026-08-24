@@ -110,13 +110,16 @@ export function ChatArea({ conversationId, onConversationCreated }: ChatAreaProp
   ];
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex flex-col h-full bg-white relative">
+      {/* Messages / Empty State */}
+      <div className={`flex-1 overflow-y-auto ${messages.length === 0 ? 'flex flex-col items-center justify-center' : ''}`}>
         {messages.length === 0 ? (
-          <EmptyState suggestions={SUGGESTIONS} onSuggestionClick={sendMessage} />
+          <div className="w-full flex flex-col items-center mt-[-10vh]">
+            <EmptyState suggestions={SUGGESTIONS} onSuggestionClick={sendMessage} />
+            <ChatInput onSend={sendMessage} disabled={isLoading} />
+          </div>
         ) : (
-          <div className="max-w-3xl mx-auto px-4 py-6 w-full">
+          <div className="max-w-4xl mx-auto px-4 py-6 w-full pb-32">
             {messages.map((msg, i) => (
               <MessageBubble key={msg.id} message={msg} isLast={i === messages.length - 1} />
             ))}
@@ -139,8 +142,12 @@ export function ChatArea({ conversationId, onConversationCreated }: ChatAreaProp
         )}
       </div>
 
-      {/* Input */}
-      <ChatInput onSend={sendMessage} disabled={isLoading} />
+      {/* Input (only fixed at bottom when not empty) */}
+      {messages.length > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-6">
+          <ChatInput onSend={sendMessage} disabled={isLoading} />
+        </div>
+      )}
     </div>
   );
 }

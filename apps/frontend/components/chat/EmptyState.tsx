@@ -1,68 +1,59 @@
-import Image from 'next/image';
-import { Sparkles } from 'lucide-react';
-
-const FEATURES = [
-  { icon: '🛠️', label: 'Tool Calling', desc: 'Real-time campaign operations' },
-  { icon: '📚', label: 'RAG Knowledge', desc: 'Searches your guidelines' },
-  { icon: '🛡️', label: 'Human Approval', desc: 'You approve high-risk actions' },
-  { icon: '📊', label: 'Activity Log', desc: 'Full audit trail' },
-];
+import { FileText, ListTodo, MessageSquare, Lightbulb, Activity, PieChart } from 'lucide-react';
 
 interface EmptyStateProps {
   suggestions: string[];
   onSuggestionClick: (s: string) => void;
 }
 
-export function EmptyState({ suggestions, onSuggestionClick }: EmptyStateProps) {
+const CARDS = [
+  { icon: <ListTodo size={16} />, label: 'Show me all active campaigns' },
+  { icon: <FileText size={16} />, label: 'How is Campaign Alpha performing?' },
+  { icon: <Lightbulb size={16} />, label: 'Create a Summer Sale 2026 campaign' },
+  { icon: <MessageSquare size={16} />, label: 'Increase Campaign Alpha budget to $150' },
+  { icon: <Activity size={16} />, label: 'Pause underperforming campaigns' },
+  { icon: <PieChart size={16} />, label: 'What is our average conversion rate?' }
+];
+
+export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-6 py-10 overflow-y-auto">
-      <div className="max-w-2xl w-full">
+    <div className="flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 pt-12 pb-8">
+      
+      {/* Hero Typography */}
+      <div className="w-full text-left mb-8">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-1">
+          Hi there, <span className="text-gradient-purple">Demo User</span>
+        </h1>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gradient-purple mb-4">
+          What would you like to know?
+        </h2>
+        <p className="text-sm text-gray-400 font-medium max-w-sm">
+          Use one of the most common prompts below or use your own to begin
+        </p>
+      </div>
 
-        {/* Hero */}
-        <div className="text-center mb-10">
-          <div className="flex justify-center mb-5">
-            <Image src="/logo.svg" alt="Campaign Agent" width={140} height={40} className="h-10 w-auto" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-3">
-            Campaign Operations Agent
-          </h1>
-          <p className="text-base text-gray-500 max-w-md mx-auto leading-relaxed">
-            Your AI-powered operations assistant. Ask about campaigns, analyze performance, search guidelines, and safely request actions.
-          </p>
+      {/* Suggestion Cards Grid */}
+      <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        {CARDS.map((card, i) => (
+          <button
+            key={i}
+            onClick={() => onSuggestionClick(card.label)}
+            className="flex flex-col justify-between items-start text-left bg-gray-50/80 hover:bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm rounded-2xl p-4 transition-all aspect-[4/3] group"
+          >
+            <span className="text-xs font-semibold text-gray-800 leading-relaxed group-hover:text-blue-900 transition-colors">
+              {card.label}
+            </span>
+            <div className="text-gray-400 mt-4">
+              {card.icon}
+            </div>
+          </button>
+        ))}
+      </div>
 
-          {/* Feature grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-7">
-            {FEATURES.map(f => (
-              <div key={f.label} className="bg-gray-50 border border-gray-100 rounded-2xl p-3 text-left hover:border-blue-200 hover:bg-blue-50/40 transition-colors">
-                <div className="text-2xl mb-1.5">{f.icon}</div>
-                <p className="text-xs font-bold text-gray-800">{f.label}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Suggestions */}
-        <div className="mb-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gray-100" />
-          <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest flex items-center gap-1.5">
-            <Sparkles size={11} className="text-blue-400" /> Try asking
-          </span>
-          <div className="h-px flex-1 bg-gray-100" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {suggestions.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => onSuggestionClick(s)}
-              className="text-left px-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all duration-150 shadow-sm hover:shadow-md group"
-            >
-              <span className="group-hover:translate-x-0.5 inline-block transition-transform duration-150">{s}</span>
-            </button>
-          ))}
-        </div>
-
+      <div className="w-full flex justify-start">
+        <button className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Refresh Prompts
+        </button>
       </div>
     </div>
   );

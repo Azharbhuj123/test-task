@@ -7,20 +7,19 @@ import { useApprovals } from '../hooks/useApprovals';
 import { useBackendHealth } from '../hooks/useBackendHealth';
 import { ChatArea } from '../components/chat/ChatArea';
 import { RightPanel } from '../components/layout/RightPanel';
-import {
-  Plus, MessageSquare, Trash2, ShieldAlert,
-  BookOpen, Activity, ChevronRight, X, Menu, Settings
-} from 'lucide-react';
-
 import { SettingsModal } from '../components/layout/SettingsModal';
+import {
+  Plus, Trash2, ShieldAlert,
+  BookOpen, Activity, Settings, LayoutPanelLeft, Search
+} from 'lucide-react';
 
 type RightTab = 'approvals' | 'documents' | 'activity';
 
 export default function Home() {
   const [activeConversationId, setActiveConversationId] = useState<string | undefined>();
   const [rightTab, setRightTab] = useState<RightTab>('approvals');
-  const [rightOpen, setRightOpen] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false); // Default false for the clean look
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { conversations, isLoading: convsLoading, remove } = useConversations();
@@ -29,12 +28,10 @@ export default function Home() {
 
   const handleNewChat = useCallback(() => {
     setActiveConversationId(undefined);
-    setSidebarOpen(false);
   }, []);
 
   const handleSelectConv = useCallback((id: string) => {
     setActiveConversationId(id);
-    setSidebarOpen(false);
   }, []);
 
   const handleConversationCreated = useCallback((id: string) => {
@@ -49,228 +46,182 @@ export default function Home() {
     }
   };
 
-  const formatTime = (iso: string) => {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    if (diff < 60000) return 'just now';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  };
-
   const rightTabs = [
-    { id: 'approvals' as RightTab, label: 'Approvals', icon: <ShieldAlert size={14} />, badge: pendingApprovals.length },
-    { id: 'documents' as RightTab, label: 'Docs', icon: <BookOpen size={14} /> },
-    { id: 'activity' as RightTab, label: 'Activity', icon: <Activity size={14} /> },
+    { id: 'approvals' as RightTab, label: 'Approvals', icon: <ShieldAlert size={16} />, badge: pendingApprovals.length },
+    { id: 'documents' as RightTab, label: 'Docs', icon: <BookOpen size={16} /> },
+    { id: 'activity' as RightTab, label: 'Activity', icon: <Activity size={16} /> },
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#f1f5f9' }}>
+    <div className="flex h-screen w-screen bg-[#f8f9fa]">
+      <div className="flex h-full w-full overflow-hidden bg-white relative">
+        
+        {/* ════════════════════════════════════════════════
+            EXPANDABLE MINI-SIDEBAR
+        ════════════════════════════════════════════════ */}
+        <aside 
+          className={`flex flex-col h-full bg-[#f8f9fa] border-r border-gray-200 transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] z-20 ${
+            sidebarExpanded ? 'w-64' : 'w-[72px]'
+          }`}
+          onMouseEnter={() => setSidebarExpanded(true)}
+          onMouseLeave={() => setSidebarExpanded(false)}
+        >
+          {/* Logo Area */}
+          <div className="h-20 flex items-center px-5 flex-shrink-0">
+            {sidebarExpanded ? (
+              <Image src="/logo.svg" alt="Campaign Agent" width={110} height={30} className="h-6 w-auto" priority />
+            ) : (
+              <Image src="/logo.svg" alt="Logo" width={32} height={32} className="w-8 h-8 object-cover object-left rounded-lg" priority />
+            )}
+          </div>
 
-      {/* ════════════════════════════════════════════════
-          LEFT SIDEBAR — dark, conversations list
-      ════════════════════════════════════════════════ */}
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`
-        fixed md:relative z-50 md:z-auto
-        flex flex-col w-64 h-full flex-shrink-0
-        transition-sidebar
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}
-        style={{ background: 'var(--sidebar-bg)' }}
-      >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
-          <Image src="/logo.svg" alt="Campaign Agent" width={110} height={30} className="h-7 w-auto" priority />
-          <button
-            className="md:hidden text-gray-400 hover:text-white p-1 rounded"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* New Chat Button */}
-        <div className="px-3 py-3">
-          <button
-            onClick={handleNewChat}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-150 group"
-            style={{ background: '#1E79F8' }}
-          >
-            <Plus size={16} className="group-hover:rotate-90 transition-transform duration-200" />
-            New Conversation
-          </button>
-        </div>
-
-        {/* Connection Status */}
-        <div className="px-4 mb-2 flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-          </span>
-          <span className="text-[11px] font-medium" style={{ color: isConnected ? '#34d399' : '#f87171' }}>
-            {isConnected ? 'Backend connected' : 'Backend offline'}
-          </span>
-        </div>
-
-        {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto px-2 pb-4">
-          {convsLoading && (
-            <div className="text-center py-8 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Loading...
-            </div>
-          )}
-
-          {!convsLoading && conversations.length === 0 && (
-            <div className="text-center py-10 px-4">
-              <MessageSquare size={28} className="mx-auto mb-2 opacity-20" style={{ color: 'rgba(255,255,255,0.5)' }} />
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No conversations yet</p>
-            </div>
-          )}
-
-          {conversations.map((conv: { id: string; title: string; messageCount: number; updatedAt: string }) => (
+          {/* Top Actions */}
+          <div className="px-3 space-y-2 mb-6">
             <button
-              key={conv.id}
-              onClick={() => handleSelectConv(conv.id)}
-              className="w-full text-left px-3 py-2.5 rounded-xl mb-1 group transition-all duration-100 flex items-start gap-2.5"
-              style={{
-                background: activeConversationId === conv.id
-                  ? 'var(--sidebar-active)'
-                  : 'transparent',
-              }}
-              onMouseEnter={e => {
-                if (activeConversationId !== conv.id)
-                  (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-hover)';
-              }}
-              onMouseLeave={e => {
-                if (activeConversationId !== conv.id)
-                  (e.currentTarget as HTMLElement).style.background = 'transparent';
-              }}
+              onClick={handleNewChat}
+              className={`flex items-center gap-3 p-2.5 rounded-xl text-gray-700 hover:bg-gray-200/60 transition-colors w-full ${!sidebarExpanded && 'justify-center'}`}
+              title="New Chat"
             >
-              <MessageSquare size={14} className="flex-shrink-0 mt-0.5" style={{ color: activeConversationId === conv.id ? '#60a5fa' : 'rgba(255,255,255,0.4)' }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate leading-snug" style={{ color: activeConversationId === conv.id ? '#fff' : 'rgba(255,255,255,0.75)' }}>
-                  {conv.title}
-                </p>
-                <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  {formatTime(conv.updatedAt)} · {conv.messageCount} msgs
-                </p>
-              </div>
-              <button
-                onClick={e => handleDelete(e, conv.id)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:text-red-400"
-                style={{ color: 'rgba(255,255,255,0.4)' }}
-              >
-                <Trash2 size={12} />
-              </button>
+              <Plus size={18} className="flex-shrink-0" />
+              {sidebarExpanded && <span className="text-sm font-semibold">New Chat</span>}
             </button>
-          ))}
-        </div>
+            
+            <button
+              className={`flex items-center gap-3 p-2.5 rounded-xl text-gray-700 hover:bg-gray-200/60 transition-colors w-full ${!sidebarExpanded && 'justify-center'}`}
+              title="Search"
+            >
+              <Search size={18} className="flex-shrink-0" />
+              {sidebarExpanded && <span className="text-sm font-medium">Search</span>}
+            </button>
+          </div>
 
-        {/* Sidebar Footer */}
-        <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--sidebar-border)' }}>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              D
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>Demo User</p>
-              <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>demo@example.com</p>
-            </div>
+          {/* App Tools (Right Panel triggers) */}
+          <div className="px-3 space-y-2 mb-6">
+            {rightTabs.map(t => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  if (rightTab === t.id && rightOpen) {
+                    setRightOpen(false);
+                  } else {
+                    setRightTab(t.id);
+                    setRightOpen(true);
+                  }
+                }}
+                className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors w-full relative ${
+                  rightTab === t.id && rightOpen
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-200/60'
+                } ${!sidebarExpanded && 'justify-center'}`}
+                title={t.label}
+              >
+                <div className="relative flex-shrink-0">
+                  {t.icon}
+                  {(t.badge ?? 0) > 0 && !sidebarExpanded && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" />
+                  )}
+                </div>
+                {sidebarExpanded && (
+                  <div className="flex flex-1 items-center justify-between min-w-0">
+                    <span className="text-sm font-medium truncate">{t.label}</span>
+                    {(t.badge ?? 0) > 0 && (
+                      <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                        {t.badge}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Conversations History (Only visible when expanded) */}
+          <div className="flex-1 overflow-y-auto px-3">
+            {sidebarExpanded && (
+              <>
+                <div className="px-2 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">History</div>
+                {convsLoading && <div className="px-2 text-xs text-gray-400">Loading...</div>}
+                {!convsLoading && conversations.map((conv: { id: string; title: string }) => (
+                  <button
+                    key={conv.id}
+                    onClick={() => handleSelectConv(conv.id)}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl mb-1 group transition-all duration-100 flex items-center justify-between ${
+                      activeConversationId === conv.id ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="text-xs truncate mr-2">{conv.title}</span>
+                    <Trash2 
+                      size={12} 
+                      className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 flex-shrink-0 cursor-pointer" 
+                      onClick={(e: React.MouseEvent) => handleDelete(e, conv.id)}
+                    />
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+
+          {/* Sidebar Footer */}
+          <div className="p-3 border-t border-gray-200 flex flex-col gap-2">
             <button
               onClick={() => setSettingsOpen(true)}
-              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              className={`flex items-center gap-3 p-2.5 rounded-xl text-gray-700 hover:bg-gray-200/60 transition-colors w-full ${!sidebarExpanded && 'justify-center'}`}
               title="Settings"
             >
-              <Settings size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
+              <Settings size={18} className="flex-shrink-0" />
+              {sidebarExpanded && <span className="text-sm font-medium">Settings</span>}
             </button>
-          </div>
-        </div>
-      </aside>
 
-      {/* ════════════════════════════════════════════════
-          CENTER — Chat
-      ════════════════════════════════════════════════ */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-white shadow-sm">
-
-        {/* Chat Topbar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-white/80 backdrop-blur-sm flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {/* Mobile: hamburger */}
             <button
-              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-              onClick={() => setSidebarOpen(true)}
+              className={`flex items-center gap-3 p-2.5 rounded-xl text-gray-700 hover:bg-gray-200/60 transition-colors w-full ${!sidebarExpanded && 'justify-center'}`}
             >
-              <Menu size={18} />
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0" />
+              {sidebarExpanded && <span className="text-sm font-medium truncate">Demo User</span>}
             </button>
-            <div>
-              <h1 className="text-sm font-bold text-gray-900 leading-none">
-                {activeConversationId
-                  ? conversations.find((c: { id: string; title: string }) => c.id === activeConversationId)?.title ?? 'Conversation'
-                  : 'New Conversation'}
-              </h1>
-              <p className="text-[11px] text-gray-400 mt-0.5">AI Campaign Operations Agent · GPT-4o-mini</p>
+          </div>
+        </aside>
+
+        {/* ════════════════════════════════════════════════
+            CENTER — Chat Area
+        ════════════════════════════════════════════════ */}
+        <main className="flex-1 flex flex-col min-w-0 bg-white relative z-10">
+          
+          {/* Topbar for connection status */}
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full border shadow-sm">
+               <span className="relative flex h-2 w-2">
+                {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+              </span>
+              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                {isConnected ? 'Connected' : 'Offline'}
+              </span>
             </div>
+            
+            <button
+              onClick={() => setRightOpen(!rightOpen)}
+              className={`p-2 rounded-full transition-colors border shadow-sm ${rightOpen ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+            >
+              <LayoutPanelLeft size={16} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Right panel toggle */}
-            <div className="hidden md:flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
-              {rightTabs.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => { setRightTab(t.id); setRightOpen(true); }}
-                  className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all ${
-                    rightTab === t.id && rightOpen
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  {t.icon}
-                  {t.label}
-                  {(t.badge ?? 0) > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
-                      {t.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
-              <button
-                onClick={() => setRightOpen(v => !v)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
-                title={rightOpen ? 'Hide panel' : 'Show panel'}
-              >
-                <ChevronRight size={14} className={`transition-transform ${rightOpen ? 'rotate-0' : 'rotate-180'}`} />
-              </button>
-            </div>
-          </div>
-        </div>
+          <ChatArea
+            conversationId={activeConversationId}
+            onConversationCreated={handleConversationCreated}
+          />
+        </main>
 
-        {/* Chat + Right Panel */}
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-hidden">
-            <ChatArea
-              conversationId={activeConversationId}
-              onConversationCreated={handleConversationCreated}
-            />
+        {/* ════════════════════════════════════════════════
+            RIGHT PANEL (Approvals / Docs / Activity)
+        ════════════════════════════════════════════════ */}
+        {rightOpen && (
+          <div className="w-96 border-l border-gray-200 bg-gray-50 flex flex-col z-10 flex-shrink-0">
+             <RightPanel tab={rightTab} />
           </div>
+        )}
 
-          {/* Right Panel */}
-          {rightOpen && (
-            <div className="hidden md:flex w-72 lg:w-80 border-l flex-shrink-0 flex-col bg-gray-50/80">
-              <RightPanel tab={rightTab} />
-            </div>
-          )}
-        </div>
-      </main>
+      </div>
 
       {/* Modals */}
       {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
