@@ -7,12 +7,12 @@ import { ChatInput } from "./ChatInput";
 const DEMO_PROMPTS = [
   'Show me all active campaigns',
   'How is Campaign Alpha performing?',
-  'What are the budget increase guidelines?',
-  'Create a new campaign called "Summer Sale 2026" with $200 budget targeting conversions',
+  'What are our budget increase guidelines?',
+  'Create a new campaign called "Summer Sale 2026" with $200/day budget for conversions',
   'Increase Campaign Alpha budget to $150',
   'Pause Campaign Delta',
   'Resume Campaign Gamma',
-  'Show me recent metrics for Campaign Beta',
+  'Show recent performance metrics for Campaign Beta',
 ];
 
 export function ChatLayout() {

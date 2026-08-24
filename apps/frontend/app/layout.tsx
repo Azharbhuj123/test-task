@@ -6,8 +6,8 @@ import QueryProvider from "../providers/QueryProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Campaign Agent",
-  description: "AI-powered campaign operations with human approval",
+  title: "Logosym – AI Campaign Operations",
+  description: "AI-powered campaign operations agent with human-in-the-loop approval, tool calling, and RAG knowledge retrieval.",
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased bg-gray-50`}>
+      <body className={`${inter.className} antialiased`}>
         <QueryProvider>
           {children}
         </QueryProvider>
