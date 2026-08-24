@@ -19,11 +19,13 @@ export const toolRegistry: ToolRegistry = {
   [resumeCampaignTool.name]: resumeCampaignTool
 };
 
-// Map ToolDefinitions to Anthropic Tool types
-export const getAnthropicTools = () => {
+export const getOpenAITools = () => {
   return Object.values(toolRegistry).map(t => ({
-    name: t.name,
-    description: t.description,
-    input_schema: t.input_schema
+    type: 'function' as const,
+    function: {
+      name: t.name,
+      description: t.description,
+      parameters: t.parameters
+    }
   }));
 };

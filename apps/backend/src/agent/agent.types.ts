@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { Tool } from '@anthropic-ai/sdk/resources/messages';
 
 export type ToolRiskLevel = 'READ' | 'LOW_RISK' | 'HIGH_RISK';
 
@@ -18,7 +17,7 @@ export interface AgentResponse {
 export interface ToolDefinition<T = any> {
   name: string;
   description: string;
-  input_schema: any; // Anthropic Tool schema
+  parameters: any; // OpenAI Function parameters JSON schema
   zod_schema: z.ZodType<T>;
   risk: ToolRiskLevel;
   execute: (args: T) => Promise<any>;
@@ -35,6 +34,6 @@ export interface AgentToolCall {
 }
 
 export interface ToolResult {
-  tool_use_id: string;
+  tool_call_id: string;
   content: string;
 }

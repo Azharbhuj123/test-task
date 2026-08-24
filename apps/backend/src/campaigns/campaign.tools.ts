@@ -5,7 +5,7 @@ import { campaignService } from './campaign.service';
 export const getCampaignsTool: ToolDefinition = {
   name: 'get_campaigns',
   description: 'Get all campaigns, optionally filtered by status (ACTIVE, PAUSED, COMPLETED, DRAFT)',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       status: { type: 'string', description: 'Optional status filter' }
@@ -23,7 +23,7 @@ export const getCampaignsTool: ToolDefinition = {
 export const getCampaignTool: ToolDefinition = {
   name: 'get_campaign',
   description: 'Get campaign details by its unique ID',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       campaignId: { type: 'string' }
@@ -42,7 +42,7 @@ export const getCampaignTool: ToolDefinition = {
 export const getCampaignMetricsTool: ToolDefinition = {
   name: 'get_campaign_metrics',
   description: 'Get all metrics for a campaign',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       campaignId: { type: 'string' }
@@ -61,7 +61,7 @@ export const getCampaignMetricsTool: ToolDefinition = {
 export const getRecentCampaignMetricsTool: ToolDefinition = {
   name: 'get_recent_campaign_metrics',
   description: 'Get recent metrics for a campaign',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       campaignId: { type: 'string' },
@@ -82,7 +82,7 @@ export const getRecentCampaignMetricsTool: ToolDefinition = {
 export const updateCampaignBudgetTool: ToolDefinition = {
   name: 'update_campaign_budget',
   description: 'Update the budget of a campaign. Requires human approval.',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       campaignId: { type: 'string' },
@@ -103,7 +103,7 @@ export const updateCampaignBudgetTool: ToolDefinition = {
 export const pauseCampaignTool: ToolDefinition = {
   name: 'pause_campaign',
   description: 'Pause a campaign. Requires human approval.',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       campaignId: { type: 'string' }
@@ -122,7 +122,7 @@ export const pauseCampaignTool: ToolDefinition = {
 export const resumeCampaignTool: ToolDefinition = {
   name: 'resume_campaign',
   description: 'Resume a paused campaign.',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       campaignId: { type: 'string' }
