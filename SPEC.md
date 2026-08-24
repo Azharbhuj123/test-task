@@ -1,19 +1,29 @@
 # AI Campaign Agent - SPEC
 
 ## Overview
-A lightweight AI Campaign Operations Agent that can query mock campaign data, use RAG for guidelines, and perform tool execution that respects a human-in-the-loop approval workflow.
+A lightweight AI Campaign Operations Agent for managing local mock campaign data, utilizing real Claude AI with tool-calling capabilities and a human-in-the-loop approval state machine for high-risk actions.
 
-## Architecture
-- Frontend: Next.js + Tailwind + React Query + Axios
-- Backend: Express + Prisma (SQLite)
-- AI: Anthropic API
+## Agent Architecture
+- Core loop handles `tool_use` directly using `@anthropic-ai/sdk`.
+- Bounded loop iteration limits `MAX_AGENT_ITERATIONS` to prevent infinite loops.
 
-## Flow
-User -> Chat -> Agent -> Tool Routing -> (Optional Approval) -> Execution -> Final Response
+## Tool Architecture
+- Strict Zod validation on backend before tools execute.
+- Read tools (`get_campaigns`, `get_campaign_metrics`) execute immediately.
+- High Risk tools (`update_campaign_budget`) transition to a pending approval state instead of immediate execution.
 
-## Scope
-- Simple local/mock campaign data.
-- Tool Calling for Reading and High-Impact updates.
-- Approval interception and resolution.
-- Local RAG setup.
-- OUT OF SCOPE: Authentication, real Ads APIs, multi-tenancy.
+## Approval State Machine
+- `PENDING -> APPROVED -> EXECUTED`
+- `PENDING -> REJECTED`
+- Executing an action relies on strict database checks to ensure idempotency. Double approvals are rejected.
+
+## RAG Architecture
+- A simple local string match retrieval over `knowledge/campaign-guidelines.md` is fed to Claude for context. Vector DB omitted for prototype simplicity.
+
+## Failure Handling
+- Zod errors map to graceful tool errors fed back to Claude.
+- Idempotency errors return strict `400` from the API.
+
+## Data Model
+- SQLite via Prisma. 
+- Core entities: `User`, `Campaign`, `CampaignMetric`, `Conversation`, `Message`, `ApprovalRequest`, `ToolExecution`.

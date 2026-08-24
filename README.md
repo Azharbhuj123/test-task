@@ -1,19 +1,45 @@
 # AI Campaign Operations Agent
 
-A lightweight AI agent capable of communicating with users, calling tools, and initiating approval workflows for high-impact actions.
+## Backend
+Node.js + Express + TypeScript
 
-## Stack
-- Next.js (App Router), Tailwind CSS
-- Node.js, Express, Prisma, SQLite
-- Anthropic Claude
+## AI
+Anthropic Claude
 
-## Workspaces
-- `apps/frontend`: Next.js web application
-- `apps/backend`: Node.js Express server
-- `packages/shared`: Shared types (if needed)
+## Database
+SQLite + Prisma
+
+## Features
+* Campaign data retrieval
+* AI tool calling
+* Agent loop
+* Campaign actions
+* Human approval
+* RAG knowledge
+* Approval audit trail
 
 ## Setup
 ```bash
 npm install
+```
+
+Then:
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+npm run prisma:seed
+```
+
+Then:
+```bash
 npm run dev
 ```
+
+## Environment Documentation
+Create `.env` in `apps/backend/` and include:
+```env
+ANTHROPIC_API_KEY=your_key_here
+PORT=4000
+DATABASE_URL="file:./dev.db"
+```
+(Do not commit real API keys to version control).

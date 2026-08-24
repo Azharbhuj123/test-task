@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import apiRoutes from './routes';
+import { errorMiddleware } from './middleware/error.middleware';
 
 dotenv.config();
 
@@ -15,5 +17,10 @@ app.get('/health', (req, res) => {
     service: 'ai-campaign-agent-backend'
   });
 });
+
+app.use('/api', apiRoutes);
+
+// Error handling must be last
+app.use(errorMiddleware);
 
 export default app;
