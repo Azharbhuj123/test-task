@@ -7,7 +7,9 @@ import {
   getRecentCampaignMetricsTool,
   updateCampaignBudgetTool,
   pauseCampaignTool,
-  resumeCampaignTool
+  resumeCampaignTool,
+  createCampaignTool,
+  updateCampaignObjectiveTool
 } from '../campaigns/campaign.tools';
 import { searchCampaignKnowledgeTool } from '../rag/rag.tools';
 
@@ -19,11 +21,13 @@ export const toolRegistry: ToolRegistry = {
   [updateCampaignBudgetTool.name]: updateCampaignBudgetTool,
   [pauseCampaignTool.name]: pauseCampaignTool,
   [resumeCampaignTool.name]: resumeCampaignTool,
+  [createCampaignTool.name]: createCampaignTool,
+  [updateCampaignObjectiveTool.name]: updateCampaignObjectiveTool,
   [searchCampaignKnowledgeTool.name]: searchCampaignKnowledgeTool,
 };
 
-export const getOpenAITools = () => {
-  return Object.values(toolRegistry).map(t => ({
+export const getOpenAITools = () =>
+  Object.values(toolRegistry).map(t => ({
     type: 'function' as const,
     function: {
       name: t.name,
@@ -31,4 +35,3 @@ export const getOpenAITools = () => {
       parameters: t.parameters
     }
   }));
-};

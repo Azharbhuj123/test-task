@@ -1,67 +1,84 @@
-import { useState, useRef, KeyboardEvent } from 'react';
-import { Send } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { useState } from 'react';
+import { Send, Mic } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
 }
 
+const QUICK_ACTIONS = [
+  'Show all campaigns',
+  'Create new campaign',
+  'Budget guidelines',
+];
+
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = () => {
     if (input.trim() && !disabled) {
       onSend(input.trim());
       setInput('');
-      // Reset height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
-  const handleInput = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
-    }
-  };
-
   return (
-    <div className="p-4 bg-white border-t">
+    <div className="bg-white border-t px-4 py-3">
+      {/* Quick action chips */}
+      {!disabled && input === '' && (
+        <div className="flex gap-2 mb-2 overflow-x-auto pb-1 scrollbar-hide">
+          {QUICK_ACTIONS.map(a => (
+            <button
+              key={a}
+              onClick={() => onSend(a)}
+              className="flex-shrink-0 text-[10px] font-medium px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-full hover:bg-blue-100 transition-colors"
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-end gap-2 max-w-4xl mx-auto">
         <textarea
-          ref={textareaRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onInput={handleInput}
-          placeholder="Ask the AI agent about your campaigns..."
+          placeholder="Ask about campaigns, request actions, search guidelines..."
           disabled={disabled}
-          className="flex-1 max-h-32 min-h-[44px] w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:opacity-50"
+          className="flex-1 min-h-[44px] max-h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none disabled:opacity-50 transition-all"
           rows={1}
+          onInput={e => {
+            const t = e.target as HTMLTextAreaElement;
+            t.style.height = 'auto';
+            t.style.height = Math.min(t.scrollHeight, 112) + 'px';
+          }}
         />
-        <Button 
-          size="icon" 
-          className="h-11 w-11 rounded-xl flex-shrink-0" 
-          onClick={handleSubmit} 
+        <button
+          onClick={handleSubmit}
           disabled={!input.trim() || disabled}
+          className={cn(
+            "h-11 w-11 rounded-2xl flex items-center justify-center transition-all flex-shrink-0 shadow-sm",
+            input.trim() && !disabled
+              ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-blue-200 shadow-md"
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+          )}
+          aria-label="Send message"
         >
-          <Send size={18} />
-        </Button>
+          <Send size={16} />
+        </button>
       </div>
-      <div className="text-center mt-2">
-        <p className="text-[11px] text-gray-400 font-medium tracking-wide uppercase">AI can make mistakes. Verify important metrics.</p>
-      </div>
+      <p className="text-center text-[10px] text-gray-300 mt-2">
+        AI can make mistakes. High-risk actions require your approval before execution.
+      </p>
     </div>
   );
 }

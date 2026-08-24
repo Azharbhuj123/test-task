@@ -4,57 +4,55 @@ export class CampaignService {
   async getCampaigns(status?: string) {
     return prisma.campaign.findMany({
       where: status ? { status } : undefined,
+      orderBy: { createdAt: 'desc' }
     });
   }
 
   async getCampaignById(campaignId: string) {
-    const campaign = await prisma.campaign.findUnique({
-      where: { id: campaignId },
-    });
-    if (!campaign) {
-      throw new Error(`Campaign with ID ${campaignId} not found`);
-    }
+    const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
+    if (!campaign) throw new Error(`Campaign with ID "${campaignId}" not found`);
     return campaign;
   }
 
   async getCampaignMetrics(campaignId: string) {
     return prisma.campaignMetric.findMany({
       where: { campaignId },
-      orderBy: { date: 'desc' },
+      orderBy: { date: 'desc' }
     });
   }
 
-  async getRecentCampaignMetrics(campaignId: string, limit: number = 5) {
+  async getRecentCampaignMetrics(campaignId: string, limit = 7) {
     return prisma.campaignMetric.findMany({
       where: { campaignId },
       orderBy: { date: 'desc' },
-      take: limit,
+      take: limit
     });
   }
 
   async updateCampaignBudget(campaignId: string, newBudget: number) {
-    // Validate campaign exists
     await this.getCampaignById(campaignId);
-    return prisma.campaign.update({
-      where: { id: campaignId },
-      data: { budget: newBudget },
-    });
+    return prisma.campaign.update({ where: { id: campaignId }, data: { budget: newBudget } });
   }
 
   async pauseCampaign(campaignId: string) {
     await this.getCampaignById(campaignId);
-    return prisma.campaign.update({
-      where: { id: campaignId },
-      data: { status: 'PAUSED' },
-    });
+    return prisma.campaign.update({ where: { id: campaignId }, data: { status: 'PAUSED' } });
   }
 
   async resumeCampaign(campaignId: string) {
     await this.getCampaignById(campaignId);
-    return prisma.campaign.update({
-      where: { id: campaignId },
-      data: { status: 'ACTIVE' },
+    return prisma.campaign.update({ where: { id: campaignId }, data: { status: 'ACTIVE' } });
+  }
+
+  async createCampaign(name: string, objective: string, budget: number) {
+    return prisma.campaign.create({
+      data: { name, objective, budget, status: 'DRAFT', currency: 'USD' }
     });
+  }
+
+  async updateCampaignObjective(campaignId: string, newObjective: string) {
+    await this.getCampaignById(campaignId);
+    return prisma.campaign.update({ where: { id: campaignId }, data: { objective: newObjective } });
   }
 }
 
