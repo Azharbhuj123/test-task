@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { chat, getHealth } from '../lib/api';
+import { chat } from '../lib/api';
 import { ChatMessage } from '../types/chat';
 
 export function useChat() {
@@ -43,9 +43,9 @@ export function useChat() {
       };
 
       setMessages(prev => [...prev, aiMsg]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.response?.data?.error || err.message || 'Failed to send message');
+      setError((err as Record<string, unknown>)?.response ? (((err as Record<string, unknown>).response as Record<string, unknown>)?.data as Record<string, unknown>)?.error as string : (err as Error)?.message || 'Failed to send message');
       
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),

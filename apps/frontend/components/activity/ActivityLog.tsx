@@ -1,6 +1,7 @@
 'use client';
 
 import { useActivityLog, useApprovalStats } from '../../hooks/useActivity';
+import { ActivityApproval } from '../../types/documents';
 import { Spinner } from '../ui/Spinner';
 import { Activity, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
 
@@ -40,7 +41,7 @@ export function ActivityLog() {
   const { data, isLoading } = useActivityLog();
   const { data: stats } = useApprovalStats();
 
-  const approvals: any[] = data?.approvals ?? [];
+  const approvals: ActivityApproval[] = data?.approvals ?? [];
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -75,11 +76,11 @@ export function ActivityLog() {
           </div>
         )}
 
-        {approvals.map((a: any) => {
+        {approvals.map((a: ActivityApproval) => {
           const cfg = STATUS_CONFIG[a.status] ?? STATUS_CONFIG.PENDING;
           const toolLabel = TOOL_LABELS[a.toolName] ?? a.toolName.replace(/_/g, ' ');
 
-          let parsedArgs: Record<string, any> = {};
+          let parsedArgs: Record<string, unknown> = {};
           try { parsedArgs = JSON.parse(a.toolArguments); } catch {}
 
           return (

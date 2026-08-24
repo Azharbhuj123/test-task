@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Approval } from "../../types/approval";
 import { Button } from "../ui/Button";
-import { Check, X, ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, ShieldAlert } from "lucide-react";
 
 interface ApprovalCardProps {
   approval: Approval;
-  onApprove: (id: string) => Promise<any>;
-  onReject: (id: string) => Promise<any>;
+  onApprove: (id: string) => Promise<void>;
+  onReject: (id: string) => Promise<void>;
   disabled: boolean;
 }
 
@@ -20,7 +20,7 @@ function formatArgKey(key: string): string {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
 }
 
-function formatArgValue(key: string, value: any): string {
+function formatArgValue(key: string, value: unknown): string {
   if (key === 'newBudget') return `$${value}`;
   return String(value);
 }
@@ -28,9 +28,7 @@ function formatArgValue(key: string, value: any): string {
 export function ApprovalCard({ approval, onApprove, onReject, disabled }: ApprovalCardProps) {
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
-  const [showRaw, setShowRaw] = useState(false);
-
-  let parsedArgs: Record<string, any> = {};
+  let parsedArgs: Record<string, unknown> = {};
   try {
     parsedArgs = JSON.parse(approval.toolArguments);
   } catch {}

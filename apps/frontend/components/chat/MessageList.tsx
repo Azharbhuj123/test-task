@@ -77,7 +77,7 @@ export function MessageList({ messages, isLoading, suggestions = [], onSuggestio
 
   return (
     <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-slate-50">
-      {messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
+      {messages.map((msg, i) => <MessageBubble key={msg.id} message={msg} isLast={i === messages.length - 1} />)}
 
       {isLoading && (
         <div className="flex justify-start mb-5">

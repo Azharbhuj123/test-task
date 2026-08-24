@@ -4,6 +4,8 @@ export type ChatMessage = {
   content: string;
   createdAt: string;
   isError?: boolean;
+  status?: 'completed' | 'pending_approval' | 'failed';
+  approvalId?: string;
 };
 
 export type ChatResponse = {

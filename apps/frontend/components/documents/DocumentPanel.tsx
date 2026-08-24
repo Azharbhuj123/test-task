@@ -19,8 +19,8 @@ export function DocumentPanel() {
       await upload(file);
       setSuccessMsg(`"${file.name}" added to knowledge base`);
       setTimeout(() => setSuccessMsg(''), 3000);
-    } catch (e: any) {
-      setErrorMsg(e?.response?.data?.error || 'Upload failed');
+    } catch (e: unknown) {
+      setErrorMsg((e as Record<string, unknown>)?.response ? (((e as Record<string, unknown>).response as Record<string, unknown>)?.data as Record<string, unknown>)?.error as string : 'Upload failed');
     }
   };
 

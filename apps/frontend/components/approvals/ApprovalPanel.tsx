@@ -3,7 +3,7 @@
 import { useApprovals } from "../../hooks/useApprovals";
 import { ApprovalCard } from "./ApprovalCard";
 import { Spinner } from "../ui/Spinner";
-import { ShieldCheck, RefreshCw } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 export function ApprovalPanel() {
   const { pendingApprovals, isLoading, error, approve, reject, isMutating } = useApprovals();
