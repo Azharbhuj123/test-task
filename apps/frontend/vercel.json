@@ -1,0 +1,4 @@
+{
+  "buildCommand": "npm install --os=linux --cpu=x64 --no-save lightningcss-linux-x64-gnu && next build",
+  "installCommand": "npm install --include=optional"
+}
