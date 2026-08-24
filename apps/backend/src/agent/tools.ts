@@ -11,7 +11,7 @@ import {
   createCampaignTool,
   updateCampaignObjectiveTool
 } from '../campaigns/campaign.tools';
-import { searchCampaignKnowledgeTool } from '../rag/rag.tools';
+import { searchCampaignKnowledgeTool, listKnowledgeDocumentsTool, readKnowledgeDocumentTool } from '../rag/rag.tools';
 
 export const toolRegistry: ToolRegistry = {
   [getCampaignsTool.name]: getCampaignsTool,
@@ -24,6 +24,8 @@ export const toolRegistry: ToolRegistry = {
   [createCampaignTool.name]: createCampaignTool,
   [updateCampaignObjectiveTool.name]: updateCampaignObjectiveTool,
   [searchCampaignKnowledgeTool.name]: searchCampaignKnowledgeTool,
+  [listKnowledgeDocumentsTool.name]: listKnowledgeDocumentsTool,
+  [readKnowledgeDocumentTool.name]: readKnowledgeDocumentTool,
 };
 
 export const getOpenAITools = () =>

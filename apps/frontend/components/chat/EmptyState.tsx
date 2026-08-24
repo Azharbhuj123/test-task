@@ -16,10 +16,10 @@ const CARDS = [
 
 export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 pt-12 pb-8">
+    <div className="flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 pt-6 pb-4">
       
       {/* Hero Typography */}
-      <div className="w-full text-left mb-8">
+      <div className="w-full text-left mb-6">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-1">
           Hi there, <span className="text-gradient-purple">Demo User</span>
         </h1>
@@ -32,12 +32,12 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
       </div>
 
       {/* Suggestion Cards Grid */}
-      <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+      <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
         {CARDS.map((card, i) => (
           <button
             key={i}
             onClick={() => onSuggestionClick(card.label)}
-            className="flex flex-col justify-between items-start text-left bg-gray-50/80 hover:bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm rounded-2xl p-4 transition-all aspect-[4/3] group"
+            className="flex flex-col justify-between items-start text-left bg-gray-50/80 hover:bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm rounded-2xl p-4 transition-all min-h-[100px] h-full group"
           >
             <span className="text-xs font-semibold text-gray-800 leading-relaxed group-hover:text-blue-900 transition-colors">
               {card.label}

@@ -24,3 +24,29 @@ export const searchCampaignKnowledgeTool: ToolDefinition = {
     return { context: result };
   }
 };
+
+export const listKnowledgeDocumentsTool: ToolDefinition = {
+  name: 'list_knowledge_documents',
+  description: 'List all documents available in the knowledge base.',
+  parameters: { type: 'object', properties: {} },
+  zod_schema: z.object({}),
+  risk: 'READ',
+  execute: async () => {
+    return { documents: ragService.listDocuments() };
+  }
+};
+
+export const readKnowledgeDocumentTool: ToolDefinition = {
+  name: 'read_knowledge_document',
+  description: 'Read the full, raw content of a specific document in the knowledge base by filename (e.g. campaign-guidelines.md). Use this when asked to summarize or read a specific document.',
+  parameters: {
+    type: 'object',
+    properties: { filename: { type: 'string' } },
+    required: ['filename']
+  },
+  zod_schema: z.object({ filename: z.string() }),
+  risk: 'READ',
+  execute: async (args: { filename: string }) => {
+    return { content: ragService.readDocument(args.filename) };
+  }
+};

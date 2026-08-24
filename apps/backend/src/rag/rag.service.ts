@@ -62,6 +62,13 @@ export class RagService {
     return relevant.map(c => `[${c.source}]\n${c.text}`).join('\n\n---\n\n');
   }
 
+  readDocument(filename: string): string {
+    const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const dest = path.join(KNOWLEDGE_DIR, safeName);
+    if (!fs.existsSync(dest)) return 'Document not found.';
+    return fs.readFileSync(dest, 'utf8');
+  }
+
   listDocuments(): { name: string; size: number; modified: string }[] {
     const files = this.getKnowledgeFiles();
     return files.map(f => {
