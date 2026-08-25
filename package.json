@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "node postinstall.js",
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces"
