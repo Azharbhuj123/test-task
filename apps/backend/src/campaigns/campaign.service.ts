@@ -34,6 +34,11 @@ export class CampaignService {
     return prisma.campaign.update({ where: { id: campaignId }, data: { budget: newBudget } });
   }
 
+  async updateCampaignSpend(campaignId: string, newSpend: number) {
+    await this.getCampaignById(campaignId);
+    return prisma.campaign.update({ where: { id: campaignId }, data: { spend: newSpend } });
+  }
+
   async pauseCampaign(campaignId: string) {
     await this.getCampaignById(campaignId);
     return prisma.campaign.update({ where: { id: campaignId }, data: { status: 'PAUSED' } });

@@ -76,6 +76,23 @@ export const updateCampaignBudgetTool: ToolDefinition = {
     campaignService.updateCampaignBudget(args.campaignId, args.newBudget)
 };
 
+export const updateCampaignSpendTool: ToolDefinition = {
+  name: 'update_campaign_spend',
+  description: 'Update the total spend of a campaign. HIGH-RISK — requires human approval before execution.',
+  parameters: {
+    type: 'object',
+    properties: {
+      campaignId: { type: 'string', description: 'The unique ID of the campaign' },
+      newSpend: { type: 'number', description: 'The new spend amount' }
+    },
+    required: ['campaignId', 'newSpend']
+  },
+  zod_schema: z.object({ campaignId: z.string(), newSpend: z.number().min(0) }),
+  risk: 'HIGH_RISK',
+  execute: async (args: { campaignId: string; newSpend: number }) =>
+    campaignService.updateCampaignSpend(args.campaignId, args.newSpend)
+};
+
 export const pauseCampaignTool: ToolDefinition = {
   name: 'pause_campaign',
   description: 'Pause an active campaign. HIGH-RISK — requires human approval before execution.',
