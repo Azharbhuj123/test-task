@@ -50,7 +50,7 @@ export default function Home() {
   const rightTabs = [
     { id: 'approvals' as RightTab, label: 'Approvals', icon: <ShieldAlert size={16} />, badge: pendingApprovals.length },
     { id: 'documents' as RightTab, label: 'Docs', icon: <BookOpen size={16} /> },
-    { id: 'activity' as RightTab, label: 'Activity', icon: <Activity size={16} /> },
+    { id: 'activity' as RightTab, label: 'Activities log', icon: <Activity size={16} /> },
   ];
 
   const filteredConversations = conversations.filter((c: { id: string; title: string }) => 
