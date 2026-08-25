@@ -87,10 +87,13 @@ export function ChatArea({ conversationId, onConversationCreated }: ChatAreaProp
         queryClient.invalidateQueries({ queryKey: ['approvalStats'] });
       }
     } catch (err: unknown) {
+      const errorData = (err as any)?.response?.data;
+      const errorMessage = errorData?.error || errorData?.message || 'An error occurred. Please check your network or OpenAI API key.';
+      
       const errMsg: ChatMessage = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content: (err as Record<string, unknown>)?.response ? ((err as Record<string, unknown>).response as Record<string, unknown>)?.data ? (((err as Record<string, unknown>).response as Record<string, unknown>).data as Record<string, unknown>)?.message as string : 'An error occurred.' : 'An error occurred. Please check your OpenAI API key in the backend `.env` file.',
+        content: errorMessage,
         createdAt: new Date().toISOString(),
         isError: true,
       };
