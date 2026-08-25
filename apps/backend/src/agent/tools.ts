@@ -9,7 +9,8 @@ import {
   pauseCampaignTool,
   resumeCampaignTool,
   createCampaignTool,
-  updateCampaignObjectiveTool
+  updateCampaignObjectiveTool,
+  deleteCampaignTool
 } from '../campaigns/campaign.tools';
 import { searchCampaignKnowledgeTool, listKnowledgeDocumentsTool, readKnowledgeDocumentTool } from '../rag/rag.tools';
 
@@ -23,6 +24,7 @@ export const toolRegistry: ToolRegistry = {
   [resumeCampaignTool.name]: resumeCampaignTool,
   [createCampaignTool.name]: createCampaignTool,
   [updateCampaignObjectiveTool.name]: updateCampaignObjectiveTool,
+  [deleteCampaignTool.name]: deleteCampaignTool,
   [searchCampaignKnowledgeTool.name]: searchCampaignKnowledgeTool,
   [listKnowledgeDocumentsTool.name]: listKnowledgeDocumentsTool,
   [readKnowledgeDocumentTool.name]: readKnowledgeDocumentTool,

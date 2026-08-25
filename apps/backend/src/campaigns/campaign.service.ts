@@ -54,6 +54,11 @@ export class CampaignService {
     await this.getCampaignById(campaignId);
     return prisma.campaign.update({ where: { id: campaignId }, data: { objective: newObjective } });
   }
+
+  async deleteCampaign(campaignId: string) {
+    await this.getCampaignById(campaignId);
+    return prisma.campaign.delete({ where: { id: campaignId } });
+  }
 }
 
 export const campaignService = new CampaignService();

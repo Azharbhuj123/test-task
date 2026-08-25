@@ -91,14 +91,14 @@ export const pauseCampaignTool: ToolDefinition = {
 
 export const resumeCampaignTool: ToolDefinition = {
   name: 'resume_campaign',
-  description: 'Resume a paused campaign. Low-risk — no approval needed.',
+  description: 'Resume a paused campaign. HIGH-RISK — requires human approval before execution.',
   parameters: {
     type: 'object',
     properties: { campaignId: { type: 'string' } },
     required: ['campaignId']
   },
   zod_schema: z.object({ campaignId: z.string() }),
-  risk: 'LOW_RISK',
+  risk: 'HIGH_RISK',
   execute: async (args: { campaignId: string }) => campaignService.resumeCampaign(args.campaignId)
 };
 
@@ -152,4 +152,17 @@ export const updateCampaignObjectiveTool: ToolDefinition = {
   risk: 'HIGH_RISK',
   execute: async (args: { campaignId: string; newObjective: string }) =>
     campaignService.updateCampaignObjective(args.campaignId, args.newObjective)
+};
+
+export const deleteCampaignTool: ToolDefinition = {
+  name: 'delete_campaign',
+  description: 'Permanently delete a campaign. HIGH-RISK — requires human approval before execution.',
+  parameters: {
+    type: 'object',
+    properties: { campaignId: { type: 'string' } },
+    required: ['campaignId']
+  },
+  zod_schema: z.object({ campaignId: z.string() }),
+  risk: 'HIGH_RISK',
+  execute: async (args: { campaignId: string }) => campaignService.deleteCampaign(args.campaignId)
 };
