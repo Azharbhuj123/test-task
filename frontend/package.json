@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm install --no-save --force lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu || true",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
